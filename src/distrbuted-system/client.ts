@@ -25,6 +25,16 @@ async function main() {
   for (let i = 0; i < workers.length; i++) {
     workers[i].run();
   }
+
+  setTimeout(() => {
+    workers[13].alive = false;
+  }, 2000);
+  setTimeout(() => {
+    workers[10].alive = false;
+  }, 4000);
+  setTimeout(() => {
+    workers[12].alive = false;
+  }, 6000);
 }
 
 main();
