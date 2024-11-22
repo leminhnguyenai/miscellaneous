@@ -6,7 +6,6 @@ class Worker {
   constructor(id: number) {
     this.id = id;
     this.peers = [];
-    //this.alive = true;
     this.alive = false;
     this.leader = false;
   }
