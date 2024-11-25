@@ -1,12 +1,16 @@
 package main
 
-import . "bully_algorithm/worker"
+import (
+	. "bully_algorithm/worker"
+	"fmt"
+	"sync"
+)
 
 func main() {
 	// Initiate the workers
 	workers := []Worker{}
 
-	for i := 1; i <= 6; i++ {
+	for i := 1; i <= 14; i++ {
 		workers = append(workers, NewWorker(i))
 	}
 
@@ -24,11 +28,27 @@ func main() {
 	}
 
 	// Turn all workers on (not sexually)
-	for i := range workers {
-		workers[i].Run()
+	var wg sync.WaitGroup
+	run := Init()
+
+	for i := 0; i < len(workers); i++ {
+		// time.Sleep(time.Millisecond * 100)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			run(&workers[i])
+		}()
 	}
 
-	workers[5].Alive = false
+	wg.Wait()
 
-	workers[2].SendToAllPeers()
+	fmt.Println()
+	fmt.Println("-- ELECTION RESULTS --")
+	for i := range workers {
+		if workers[i].IsLeader() {
+			fmt.Printf("Worker %d is the leader 👑\n", i+1)
+		} else {
+			fmt.Printf("Worker %d is a worker\n", i+1)
+		}
+	}
 }
