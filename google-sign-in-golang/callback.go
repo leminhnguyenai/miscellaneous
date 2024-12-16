@@ -3,24 +3,16 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
 
-	"github.com/lpernett/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 )
 
 func Callback(w http.ResponseWriter, r *http.Request) {
-	err := godotenv.Load(
-		"/Users/minhnl2012/Documents/Projects/miscellaneous/google-sign-in-golang/.env",
-	)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	parsedUrl, err := url.Parse(
 		fmt.Sprintf("http://localhost%s%s", os.Getenv("PORT"), r.URL.String()),
 	)
@@ -55,12 +47,15 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 	cookie := http.Cookie{
 		Name:     "refreshToken",
 		Value:    refreshToken,
+		Path:     "/",
+		Domain:   "localhost",
 		MaxAge:   120,
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
 	}
+	log.Println(cookie)
 
 	http.SetCookie(w, &cookie)
-	http.Redirect(w, r, "/dashboard", http.StatusTemporaryRedirect)
+	http.Redirect(w, r, "/dashboard", http.StatusPermanentRedirect)
 }

@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/lpernett/godotenv"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	oauth2api "google.golang.org/api/oauth2/v2"
@@ -15,14 +14,6 @@ import (
 
 func Dashboard(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
-
-	err := godotenv.Load(
-		"/Users/minhnl2012/Documents/Projects/miscellaneous/google-sign-in-golang/.env",
-	)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 
 	cookie, err := r.Cookie("refreshToken")
 	if err != nil {
