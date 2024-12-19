@@ -8,13 +8,15 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func createToken(refreshToken string) (string, error) {
+var secretKey = []byte(os.Getenv("SECRET_KEY"))
+
+func CreateToken(refreshToken string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"refreshToken": refreshToken,
 		"exp":          time.Now().Add(time.Hour * 24).Unix(),
 	})
 
-	tokenString, err := token.SignedString(os.Getenv("SECRET_KEY"))
+	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
 		return "", err
 	}
@@ -22,21 +24,25 @@ func createToken(refreshToken string) (string, error) {
 	return tokenString, nil
 }
 
-func verifyToken(tokenString string) error {
+func VerifyToken(tokenString string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(
 		tokenString,
 		func(token *jwt.Token) (interface{}, error) {
-			return os.Getenv("SECRET_KEY"), nil
+			return secretKey, nil
 		},
 	)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if !token.Valid {
-		return fmt.Errorf("invalid token")
+		return nil, fmt.Errorf("invalid token")
 	}
 
-	return nil
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	} else {
+		return nil, err
+	}
 }

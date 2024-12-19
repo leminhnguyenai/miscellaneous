@@ -15,13 +15,26 @@ import (
 func Dashboard(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
-	cookie, err := r.Cookie("refreshToken")
+	cookie, err := r.Cookie("token")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	refreshToken := cookie.Value
+	jwtTokenString := cookie.Value
+
+	jwtTokenClaims, err := VerifyToken(jwtTokenString)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	refreshToken, ok := jwtTokenClaims["refreshToken"].(string)
+	if refreshToken == "" || !ok {
+		http.Error(w, "Error extracting refresh token", http.StatusInternalServerError)
+		return
+	}
+
 	token := &oauth2.Token{
 		RefreshToken: refreshToken,
 	}

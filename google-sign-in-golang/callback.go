@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -44,9 +43,15 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 
 	refreshToken := token.RefreshToken
 
+	jwtToken, err := CreateToken(refreshToken)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	cookie := http.Cookie{
-		Name:     "refreshToken",
-		Value:    refreshToken,
+		Name:     "token",
+		Value:    jwtToken,
 		Path:     "/",
 		Domain:   "localhost",
 		MaxAge:   120,
@@ -54,7 +59,6 @@ func Callback(w http.ResponseWriter, r *http.Request) {
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
 	}
-	log.Println(cookie)
 
 	http.SetCookie(w, &cookie)
 	http.Redirect(w, r, "/dashboard", http.StatusPermanentRedirect)
